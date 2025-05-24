@@ -14,25 +14,37 @@ ifneq ($(words $(CURDIR)),1)
  $(error Unsupported: GNU Make cannot build in directories containing spaces, build elsewhere: '$(CURDIR)')
 endif
 
+# If $VERILATOR_ROOT isn't in the environment, we assume it is part of a
+# package install, and verilator is in your path. Otherwise find the
+# binary relative to $VERILATOR_ROOT (such as when inside the git sources).
 ifeq ($(VERILATOR_ROOT),)
 VERILATOR = verilator
+VERILATOR_COVERAGE = verilator_coverage
 else
 export VERILATOR_ROOT
 VERILATOR = $(VERILATOR_ROOT)/bin/verilator
+VERILATOR_COVERAGE = $(VERILATOR_ROOT)/bin/verilator_coverage
 endif
 
 VERILATOR_FLAGS += --cc --exe --build -j 0
+# Optimize
+VERILATOR_FLAGS += -x-assign fast
+# Check SystemVerilog assertions
+VERILATOR_FLAGS += --assert
+# Generate coverage analysis
+VERILATOR_FLAGS += --coverage
 VERILATOR_FLAGS += --trace-fst -Irtl    # 生成FST波形文件
 VERILATOR_FLAGS += -Irtl
 VERILATOR_FLAGS += -Wno-fatal
+# -Wall 启用所有警告。
+# VERILATOR_FLAGS += -Wall -Wno-UNUSED  # 开启警告选项
 
 
 # # opencv
 # # 将 OpenCV 参数合并到 Verilator 的 CFLAGS 和 LDFLAGS 中
 # VERILATOR_FLAGS += -CFLAGS "$(USER_INCLUDE) $(OPENCV_CFLAGS)"
 # VERILATOR_FLAGS += -LDFLAGS "$(OPENCV_LDFLAGS)"
-# -Wall 启用所有警告。
-# VERILATOR_FLAGS += -Wall -Wno-UNUSED  # 开启警告选项
+
 
 # 用户源文件配置
 USER_SRCS = sim_fst/sim_main.cpp
