@@ -1,0 +1,6 @@
+*/obj_dir/*
+*.fst
+*/.metals/
+*/.vscode/
+out/
+chisel-template/rtl/*
